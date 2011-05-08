@@ -15,7 +15,7 @@ slice: slice.c
 	gcc -o slice slice.c
 
 fourier: fourier.c window.o
-	gcc -lm `pkg-config --cflags --libs fftw3` -o fourier window.o fourier.c
+	gcc -lm `pkg-config --cflags --libs fftw3` -o fourier fourier.c window.o
 
-radio: radio.c
-	gcc -lm `pkg-config --cflags --libs fftw3` -framework CoreAudio -ljack -o radio radio.c
+radio: radio.c window.o
+	gcc -lm `pkg-config --cflags --libs fftw3` -framework CoreAudio -ljack -o radio radio.c window.o
