@@ -15,8 +15,8 @@ static const char * const CLIENT_NAME = "radio";
 static const char * const INPUT_NAME  = "input";
 static const char * const OUTPUT_NAME = "output";
 
-static const double THRESHOLD   = 0.500;
-static const double WINDOW_SIZE = 1.000;
+static const double THRESHOLD   = 0.600;
+static const double WINDOW_SIZE = 0.250;
 
 
 
@@ -157,17 +157,23 @@ process (jack_nframes_t  nframes,
       maximum = data->modulus_data[i];
   }
 
+  for (i = 0; i < nframes; i++)
+    output_buffer[i] = 0;
+
+  double factor = 1600; /* XXX */
+
   for (i = 0; i < buffer_size / 2 + 1; i++)
   {
     if (data->modulus_data[i] > THRESHOLD * maximum)
     {
-      double amplitude = data->modulus_data[i] / maximum;
-      double frequency = i / buffer_size;
+      double amplitude = data->modulus_data[i] / factor;
+      double frequency = 1.0 * i / buffer_size;
+      double phase     = data->block_index * nframes;
 
       int j;
 
       for (j = 0; j < nframes; j++)
-        output_buffer[j] += amplitude * sine (frequency * j);
+        output_buffer[j] += amplitude * square (frequency * (phase + j));
     }
   }
 

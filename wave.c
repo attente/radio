@@ -50,7 +50,8 @@ sawtooth (double x)
 static double
 mod (double x)
 {
-  double y = modf (x, NULL);
+  double z;
+  double y = modf (x, &z);
 
   return y + (x < 0 && y);
 }
