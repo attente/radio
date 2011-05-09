@@ -7,6 +7,7 @@
 #include <jack/jack.h>
 
 #include "window.h"
+#include "wave.h"
 
 
 
@@ -14,6 +15,7 @@ static const char * const CLIENT_NAME = "radio";
 static const char * const INPUT_NAME  = "input";
 static const char * const OUTPUT_NAME = "output";
 
+static const double THRESHOLD   = 0.500;
 static const double WINDOW_SIZE = 1.000;
 
 
@@ -44,10 +46,10 @@ state;
 
 
 
-int    process (jack_nframes_t  nframes,
-                void           *arg);
+static int    process (jack_nframes_t  nframes,
+                       void           *arg);
 
-double modulus (fftw_complex    z);
+static double modulus (fftw_complex    z);
 
 
 
@@ -118,7 +120,7 @@ main (int   argc,
 
 
 
-int
+static int
 process (jack_nframes_t  nframes,
          void           *arg)
 {
@@ -148,8 +150,26 @@ process (jack_nframes_t  nframes,
   double maximum = 0;
 
   for (i = 0; i < buffer_size / 2 + 1; i++)
-    if ((data->modulus_data[i] = modulus (data->output_data[i])) > maximum)
+  {
+    data->modulus_data[i] = modulus (data->output_data[i]);
+
+    if (maximum < data->modulus_data[i])
       maximum = data->modulus_data[i];
+  }
+
+  for (i = 0; i < buffer_size / 2 + 1; i++)
+  {
+    if (data->modulus_data[i] > THRESHOLD * maximum)
+    {
+      double amplitude = data->modulus_data[i] / maximum;
+      double frequency = i / buffer_size;
+
+      int j;
+
+      for (j = 0; j < nframes; j++)
+        output_buffer[j] += amplitude * sine (frequency * j);
+    }
+  }
 
   data->block_index++;
 
@@ -158,7 +178,7 @@ process (jack_nframes_t  nframes,
 
 
 
-double
+static double
 modulus (fftw_complex z)
 {
   return sqrt (z[0] * z[0] + z[1] * z[1]);

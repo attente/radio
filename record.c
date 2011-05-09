@@ -26,8 +26,8 @@ state;
 
 
 
-int process (jack_nframes_t  nframes,
-             void           *arg);
+static int process (jack_nframes_t  nframes,
+                    void           *arg);
 
 
 
@@ -79,7 +79,7 @@ main (int   argc,
 
 
 
-int
+static int
 process (jack_nframes_t  nframes,
          void           *arg)
 {

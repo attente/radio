@@ -2,8 +2,8 @@
 
 
 
-double hann (int N,
-             int n);
+static double hann (int N,
+                    int n);
 
 
 
@@ -11,7 +11,7 @@ double (*window) (int N, int n) = hann;
 
 
 
-double
+static double
 hann (int N,
       int n)
 {

@@ -4,6 +4,8 @@
 
 #include <jack/jack.h>
 
+#include "wave.h"
+
 
 
 static const double MIDDLE_C    = 261.6;
@@ -38,8 +40,8 @@ state;
 
 
 
-int process (jack_nframes_t  nframes,
-             void           *arg);
+static int process (jack_nframes_t  nframes,
+                    void           *arg);
 
 
 
@@ -111,7 +113,7 @@ main (int   argc,
 
 
 
-int
+static int
 process (jack_nframes_t  nframes,
          void           *arg)
 {
@@ -124,22 +126,16 @@ process (jack_nframes_t  nframes,
 
   double period = data->sample_rate / data->frequency;
 
-  int sample;
+  int i;
 
-  for (sample = 0; sample < nframes; sample++)
+  for (i = 0; i < nframes; i++)
   {
-    int current_sample = data->current_block * nframes + sample;
-    double current_position = modf (current_sample / period, NULL);
+    double current_position = (data->current_block * nframes + i) / period;
 
-    if (current_position < -0.5)
-      current_position++;
-    else if (current_position >= 0.5)
-      current_position--;
-
-    sine_buffer[sample]     = sin (2 * M_PI * current_position);
-    square_buffer[sample]   = current_position < 0 ? -1 : 1;
-    triangle_buffer[sample] = current_position < 0 ? -1 + 4 * fabs (current_position + 0.25) : 1 - 4 * fabs (current_position - 0.25);
-    sawtooth_buffer[sample] = 2 * current_position;
+    sine_buffer[i]     = sine     (current_position);
+    square_buffer[i]   = square   (current_position);
+    triangle_buffer[i] = triangle (current_position);
+    sawtooth_buffer[i] = sawtooth (current_position);
   }
 
   data->current_block++;
